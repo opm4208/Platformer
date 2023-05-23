@@ -9,10 +9,14 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float movePower;
     [SerializeField] private float jumpPower;
     [SerializeField] private float maxSpeed;
+
+    [SerializeField] LayerMask groundLayer;
+
     private Rigidbody2D rb;
     private Animator animator;
     private SpriteRenderer rbSprite;
     private Vector2 inputDir;
+    public bool isGround;
 
 
     private void Awake()
@@ -25,6 +29,11 @@ public class PlayerController : MonoBehaviour
     private void Update()
     {
         Move();
+    }
+
+    private void FixedUpdate()
+    {
+        //GroundCheck();
     }
 
     public void Move()
@@ -51,15 +60,36 @@ public class PlayerController : MonoBehaviour
 
     private void OnJump(InputValue value)
     {
-        Jump();
+        if(isGround)
+            Jump();
     }
 
+    private void GroundCheck()
+    {
+
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 1.5f, groundLayer);
+        if (hit.collider != null)
+        {
+            Debug.DrawRay(transform.position, new Vector3(hit.point.x, hit.point.y, 0) - transform.position, Color.red);
+            isGround = true;
+            animator.SetBool("GroundCheck", true);
+        }
+        else
+        {
+            isGround=false;
+            animator.SetBool("GroundCheck", false);
+            Debug.DrawRay(transform.position, Vector3.down * 1.5f, Color.green);
+        }
+    }
     private void OnCollisionEnter2D(Collision2D collision)
     {
+        isGround = true;
         animator.SetBool("GroundCheck", true);
     }
+
     private void OnCollisionExit2D(Collision2D collision)
     {
+        isGround = false;
         animator.SetBool("GroundCheck", false);
     }
 }
